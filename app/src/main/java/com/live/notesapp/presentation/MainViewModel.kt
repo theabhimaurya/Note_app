@@ -1,0 +1,31 @@
+package com.live.notesapp.presentation
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.live.notesapp.domain.model.AppTheme
+import com.live.notesapp.domain.repository.ThemeRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+
+@HiltViewModel
+class MainViewModel @Inject constructor(
+    private val themeRepository: ThemeRepository
+) : ViewModel() {
+
+    val themeState: StateFlow<AppTheme> = themeRepository.getTheme()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = AppTheme.SYSTEM
+        )
+
+    fun setTheme(theme: AppTheme) {
+        viewModelScope.launch {
+            themeRepository.setTheme(theme)
+        }
+    }
+}

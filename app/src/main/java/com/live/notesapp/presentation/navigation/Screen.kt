@@ -10,4 +10,5 @@ sealed class Screen(val route: String) {
             return noteId?.let { "add_edit_note?noteId=$it" } ?: "add_edit_note"
         }
     }
+    object Settings : Screen("settings")
 }

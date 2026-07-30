@@ -10,6 +10,7 @@ import com.live.notesapp.presentation.login.LoginScreen
 import com.live.notesapp.presentation.login.LoginViewModel
 import com.live.notesapp.presentation.notes.NotesScreen
 import com.live.notesapp.presentation.notes.NotesViewModel
+import com.live.notesapp.presentation.settings.SettingsScreen
 import com.live.notesapp.presentation.signup.SignupScreen
 import com.live.notesapp.presentation.signup.SignupViewModel
 import com.live.notesapp.presentation.splash.SplashScreen
@@ -66,7 +67,15 @@ fun NavGraph(
                     navController.navigate(Screen.Login.route) {
                         popUpTo(Screen.Notes.route) { inclusive = true }
                     }
+                },
+                onNavigateToSettings = {
+                    navController.navigate(Screen.Settings.route)
                 }
+            )
+        }
+        composable(Screen.Settings.route) {
+            SettingsScreen(
+                onNavigateBack = { navController.popBackStack() }
             )
         }
     }

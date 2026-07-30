@@ -52,7 +52,7 @@ fun SignupScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.White)
+                .background(MaterialTheme.colorScheme.background)
                 .padding(horizontal = 30.dp)
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -63,7 +63,7 @@ fun SignupScreen(
             Box(
                 modifier = Modifier
                     .size(180.dp)
-                    .background(Color(0xFFF5F5F5), RoundedCornerShape(20.dp)),
+                    .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(20.dp)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
@@ -80,7 +80,7 @@ fun SignupScreen(
                 text = "Sign Up",
                 style = MaterialTheme.typography.headlineMedium.copy(
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1A237E)
+                    color = MaterialTheme.colorScheme.onBackground
                 )
             )
 

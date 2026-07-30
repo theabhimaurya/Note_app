@@ -36,7 +36,7 @@ fun SplashScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White),
+            .background(MaterialTheme.colorScheme.background),
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -44,14 +44,14 @@ fun SplashScreen(
                 imageVector = Icons.Default.Description,
                 contentDescription = null,
                 modifier = Modifier.size(100.dp),
-                tint = Color(0xFF2196F3)
+                tint = MaterialTheme.colorScheme.primary
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = "Notes App",
                 style = MaterialTheme.typography.headlineLarge.copy(
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1A237E),
+                    color = MaterialTheme.colorScheme.onBackground,
                     letterSpacing = 2.sp
                 )
             )

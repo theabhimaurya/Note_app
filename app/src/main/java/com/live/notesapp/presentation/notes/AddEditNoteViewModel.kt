@@ -1,10 +1,13 @@
 package com.live.notesapp.presentation.notes
 
+import android.net.Uri
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.live.notesapp.domain.model.Note
 import com.live.notesapp.domain.repository.NotesRepository
+import com.live.notesapp.domain.usecase.RecognizeTextUseCase
+import com.live.notesapp.utils.getSupabaseErrorMessage
 import io.github.jan.supabase.auth.Auth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,6 +20,7 @@ import javax.inject.Inject
 @HiltViewModel
 class AddEditNoteViewModel @Inject constructor(
     private val notesRepository: NotesRepository,
+    private val recognizeTextUseCase: RecognizeTextUseCase,
     private val auth: Auth,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
@@ -102,12 +106,68 @@ class AddEditNoteViewModel @Inject constructor(
             result.onSuccess {
                 _uiState.update { it.copy(isLoading = false, isSuccess = true) }
             }.onFailure { e ->
-                _uiState.update { it.copy(isLoading = false, error = e.message ?: "Unknown error") }
+                _uiState.update { it.copy(isLoading = false, error = e.getSupabaseErrorMessage()) }
             }
         }
     }
 
     fun clearError() {
         _uiState.update { it.copy(error = null) }
+    }
+
+    fun onScanTextClicked() {
+        _uiState.update { it.copy(showOcrOptions = true) }
+    }
+
+    fun onDismissOcrOptions() {
+        _uiState.update { it.copy(showOcrOptions = false) }
+    }
+
+    fun onImageSelected(uri: Uri) {
+        _uiState.update { it.copy(showOcrOptions = false, isRecognizing = true) }
+        viewModelScope.launch {
+            recognizeTextUseCase(uri)
+                .onSuccess { text ->
+                    handleRecognizedText(text)
+                }
+                .onFailure { e ->
+                    _uiState.update { it.copy(isRecognizing = false, error = e.message ?: "Failed to recognize text") }
+                }
+        }
+    }
+
+    private fun handleRecognizedText(text: String) {
+        if (_uiState.value.description.isBlank()) {
+            _uiState.update { it.copy(description = text, isRecognizing = false) }
+        } else {
+            _uiState.update { it.copy(pendingRecognizedText = text, showOcrConflictDialog = true, isRecognizing = false) }
+        }
+    }
+
+    fun onReplaceText() {
+        _uiState.update { it.copy(
+            description = it.pendingRecognizedText,
+            showOcrConflictDialog = false,
+            pendingRecognizedText = ""
+        ) }
+    }
+
+    fun onAppendText() {
+        val currentText = _uiState.value.description
+        val pendingText = _uiState.value.pendingRecognizedText
+        val newDescription = if (currentText.endsWith("\n") || currentText.isBlank()) {
+            currentText + pendingText
+        } else {
+            currentText + "\n" + pendingText
+        }
+        _uiState.update { it.copy(
+            description = newDescription,
+            showOcrConflictDialog = false,
+            pendingRecognizedText = ""
+        ) }
+    }
+
+    fun onDismissConflictDialog() {
+        _uiState.update { it.copy(showOcrConflictDialog = false, pendingRecognizedText = "") }
     }
 }

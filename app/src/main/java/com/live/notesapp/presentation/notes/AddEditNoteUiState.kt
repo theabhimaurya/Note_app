@@ -6,5 +6,9 @@ data class AddEditNoteUiState(
     val description: String = "",
     val error: String? = null,
     val isSuccess: Boolean = false,
-    val isEditing: Boolean = false
+    val isEditing: Boolean = false,
+    val isRecognizing: Boolean = false,
+    val showOcrOptions: Boolean = false,
+    val showOcrConflictDialog: Boolean = false,
+    val pendingRecognizedText: String = ""
 )
