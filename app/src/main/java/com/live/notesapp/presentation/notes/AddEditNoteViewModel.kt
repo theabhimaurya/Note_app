@@ -78,14 +78,14 @@ class AddEditNoteViewModel @Inject constructor(
     }
 
     fun saveNote() {
+        if (_uiState.value.title.isBlank() || _uiState.value.description.isBlank()) {
+            _uiState.update { it.copy(error = "Title and description cannot be empty") }
+            return
+        }
+
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
             
-            if (_uiState.value.title.isBlank() || _uiState.value.description.isBlank()) {
-                _uiState.update { it.copy(isLoading = false, error = "Title and description cannot be empty") }
-                return@launch
-            }
-
             val currentUserId = auth.currentUserOrNull()?.id
             if (currentUserId == null) {
                 _uiState.update { it.copy(isLoading = false, error = "User not authenticated") }

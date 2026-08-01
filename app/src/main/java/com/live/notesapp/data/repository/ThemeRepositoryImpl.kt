@@ -41,4 +41,10 @@ class ThemeRepositoryImpl @Inject constructor(
             preferences[PreferencesKeys.APP_THEME] = theme.name
         }
     }
+
+    override suspend fun clear() {
+        context.dataStore.edit { preferences ->
+            preferences.clear()
+        }
+    }
 }

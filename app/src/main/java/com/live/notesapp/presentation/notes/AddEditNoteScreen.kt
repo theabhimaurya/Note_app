@@ -9,27 +9,25 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CameraAlt
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.live.notesapp.presentation.components.AppToast
 import com.live.notesapp.utils.FileUtils
@@ -76,66 +74,86 @@ fun AddEditNoteScreen(
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(24.dp)
-                .navigationBarsPadding()
-                .imePadding()
-        ) {
-            // Top Action Buttons
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(Color(0xFFFF5252))
-                        .clickable { viewModel.deleteNote() },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        Icons.Default.Delete,
-                        contentDescription = "Delete",
-                        tint = Color.White,
-                        modifier = Modifier.size(20.dp)
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = if (uiState.isEditing) "Edit Note" else "Add Note",
+                        fontWeight = FontWeight.Bold
                     )
-                }
-
-                Box(
+                },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
+            )
+        },
+        bottomBar = {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(24.dp)
+                    .navigationBarsPadding()
+            ) {
+                Button(
+                    onClick = { viewModel.saveNote() },
                     modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(if (uiState.isLoading) Color.Gray else Color(0xFF81C784))
-                        .clickable(enabled = !uiState.isLoading) { viewModel.saveNote() },
-                    contentAlignment = Alignment.Center
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Transparent
+                    ),
+                    contentPadding = PaddingValues(),
+                    enabled = !uiState.isLoading
                 ) {
-                    if (uiState.isLoading) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(20.dp),
-                            color = Color.White,
-                            strokeWidth = 2.dp
-                        )
-                    } else {
-                        Icon(
-                            Icons.Default.Edit,
-                            contentDescription = "Save",
-                            tint = Color.White,
-                            modifier = Modifier.size(20.dp)
-                        )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(
+                                brush = Brush.horizontalGradient(
+                                    colors = listOf(Color(0xFFA78BFA), Color(0xFF7C3AED))
+                                ),
+                                shape = RoundedCornerShape(16.dp)
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (uiState.isLoading) {
+                            CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+                        } else {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(Icons.Default.Check, null, tint = Color.White)
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    "Save Note",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = Color.White,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
                     }
                 }
             }
-
-            Spacer(modifier = Modifier.height(24.dp))
+        },
+        containerColor = Color.White
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(horizontal = 24.dp)
+                .verticalScroll(rememberScrollState())
+                .imePadding()
+        ) {
+            Spacer(modifier = Modifier.height(8.dp))
 
             // Label Chip
             Surface(
-                color = Color(0xFFFAF9F6),
+                color = Color(0xFFF5F5F5),
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier.padding(bottom = 16.dp)
             ) {
@@ -155,8 +173,10 @@ fun AddEditNoteScreen(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    unfocusedBorderColor = Color.LightGray.copy(alpha = 0.5f),
-                    focusedBorderColor = Color.LightGray
+                    unfocusedBorderColor = Color(0xFFE5E7EB),
+                    focusedBorderColor = Color(0xFFA78BFA),
+                    unfocusedContainerColor = Color.White,
+                    focusedContainerColor = Color.White
                 ),
                 singleLine = true
             )
@@ -171,30 +191,34 @@ fun AddEditNoteScreen(
                     placeholder = { Text("Add note details...", color = Color.Gray) },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .heightIn(min = 200.dp),
+                        .heightIn(min = 300.dp),
                     shape = RoundedCornerShape(16.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        unfocusedBorderColor = Color.LightGray.copy(alpha = 0.5f),
-                        focusedBorderColor = Color.LightGray
+                        unfocusedBorderColor = Color(0xFFE5E7EB),
+                        focusedBorderColor = Color(0xFFA78BFA),
+                        unfocusedContainerColor = Color.White,
+                        focusedContainerColor = Color.White
                     )
                 )
 
-                // OCR Button overlay at top right of the field
+                // OCR Button overlay
                 IconButton(
                     onClick = { viewModel.onScanTextClicked() },
                     modifier = Modifier
                         .align(Alignment.TopEnd)
                         .padding(8.dp)
                         .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f))
+                        .background(Color(0xFFF3F0FF))
                 ) {
                     Icon(
                         imageVector = Icons.Default.CameraAlt,
                         contentDescription = "Scan Text",
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer
+                        tint = Color(0xFF7C3AED)
                     )
                 }
             }
+            
+            Spacer(modifier = Modifier.height(24.dp))
         }
 
         // Loading Overlay
@@ -214,7 +238,7 @@ fun AddEditNoteScreen(
                         modifier = Modifier.padding(24.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        CircularProgressIndicator(color = Color(0xFF3F51B5))
+                        CircularProgressIndicator(color = Color(0xFF7C3AED))
                         Spacer(modifier = Modifier.height(16.dp))
                         Text("Recognizing text...", style = MaterialTheme.typography.bodyLarge)
                     }
@@ -271,7 +295,7 @@ fun AddEditNoteScreen(
                 text = { Text("What would you like to do with the recognized text?") },
                 confirmButton = {
                     TextButton(onClick = { viewModel.onAppendText() }) {
-                        Text("Append")
+                        Text("Append", color = Color(0xFF7C3AED))
                     }
                 },
                 dismissButton = {
@@ -286,11 +310,11 @@ fun AddEditNoteScreen(
                 }
             )
         }
-
-        AppToast(
-            message = uiState.error,
-            isError = true,
-            onDismiss = { viewModel.clearError() }
-        )
     }
+
+    AppToast(
+        message = uiState.error,
+        isError = true,
+        onDismiss = { viewModel.clearError() }
+    )
 }

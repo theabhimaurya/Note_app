@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.live.notesapp.domain.model.AppTheme
 import com.live.notesapp.domain.repository.ThemeRepository
 import com.live.notesapp.BuildConfig
+import com.live.notesapp.domain.repository.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -20,7 +21,8 @@ data class SettingsUiState(
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
-    private val themeRepository: ThemeRepository
+    private val themeRepository: ThemeRepository,
+    private val authRepository: AuthRepository
 ) : ViewModel() {
 
     val uiState: StateFlow<SettingsUiState> = themeRepository.getTheme()
@@ -36,6 +38,14 @@ class SettingsViewModel @Inject constructor(
     fun setTheme(theme: AppTheme) {
         viewModelScope.launch {
             themeRepository.setTheme(theme)
+        }
+    }
+
+    fun logout(onSuccess: () -> Unit) {
+        viewModelScope.launch {
+            authRepository.logout().onSuccess {
+                onSuccess()
+            }
         }
     }
 }

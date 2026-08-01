@@ -1,7 +1,9 @@
 package com.live.notesapp.presentation.notes
 
+import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.live.notesapp.domain.model.Note
+import com.live.notesapp.domain.repository.NotesRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -18,11 +20,15 @@ class ViewNoteViewModelTest {
 
     private val testDispatcher = StandardTestDispatcher()
     private lateinit var viewModel: ViewNoteViewModel
+    private lateinit var notesRepository: NotesRepository
+    private lateinit var savedStateHandle: SavedStateHandle
 
     @Before
     fun setup() {
         Dispatchers.setMain(testDispatcher)
-        viewModel = ViewNoteViewModel()
+        notesRepository = FakeNotesRepository()
+        savedStateHandle = SavedStateHandle()
+        viewModel = ViewNoteViewModel(notesRepository, savedStateHandle)
     }
 
     @After
@@ -47,4 +53,12 @@ class ViewNoteViewModelTest {
             assertEquals(expectedFormattedText, (effect as ViewNoteUiEffect.CopyToClipboard).text)
         }
     }
+}
+
+class FakeNotesRepository : NotesRepository {
+    override suspend fun getNotes(): Result<List<Note>> = Result.success(emptyList())
+    override suspend fun addNote(note: Note): Result<Unit> = Result.success(Unit)
+    override suspend fun updateNote(note: Note): Result<Unit> = Result.success(Unit)
+    override suspend fun deleteNote(id: String): Result<Unit> = Result.success(Unit)
+    override suspend fun searchNotes(query: String): Result<List<Note>> = Result.success(emptyList())
 }

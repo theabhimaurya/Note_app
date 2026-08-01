@@ -46,6 +46,7 @@ class SignupViewModel @Inject constructor(
             _uiState.update { it.copy(isLoading = true, error = null) }
             val result = authRepository.signUp(name, email, password)
             result.onSuccess {
+                authRepository.syncProfile()
                 _uiState.update { it.copy(isLoading = false, isSuccess = true) }
             }.onFailure { e ->
                 _uiState.update { it.copy(isLoading = false, error = e.getSupabaseErrorMessage()) }

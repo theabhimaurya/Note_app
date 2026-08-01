@@ -13,10 +13,14 @@ import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.postgrest
+import io.github.jan.supabase.realtime.Realtime
+import io.github.jan.supabase.realtime.realtime
+import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.api.createClientPlugin
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
+import io.ktor.client.plugins.websocket.WebSockets
 import io.ktor.util.AttributeKey
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -40,10 +44,13 @@ object AppModule {
             supabaseUrl = Constants.SUPABASE_URL,
             supabaseKey = Constants.SUPABASE_KEY
         ) {
+            httpEngine = CIO.create()
             install(Auth)
             install(Postgrest)
+            install(Realtime)
 
             httpConfig {
+                install(WebSockets)
                 if (isDebug) {
                     install(Logging) {
                         logger = object : Logger {
@@ -114,5 +121,11 @@ object AppModule {
     @Singleton
     fun provideSupabasePostgrest(client: SupabaseClient): Postgrest {
         return client.postgrest
+    }
+
+    @Provides
+    @Singleton
+    fun provideSupabaseRealtime(client: SupabaseClient): Realtime {
+        return client.realtime
     }
 }

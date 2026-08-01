@@ -1,10 +1,12 @@
 package com.live.notesapp.di
 
 import com.live.notesapp.data.repository.AuthRepositoryImpl
+import com.live.notesapp.data.repository.ChatRepositoryImpl
 import com.live.notesapp.data.repository.NotesRepositoryImpl
 import com.live.notesapp.data.repository.TextRecognitionRepositoryImpl
 import com.live.notesapp.data.repository.ThemeRepositoryImpl
 import com.live.notesapp.domain.repository.AuthRepository
+import com.live.notesapp.domain.repository.ChatRepository
 import com.live.notesapp.domain.repository.NotesRepository
 import com.live.notesapp.domain.repository.TextRecognitionRepository
 import com.live.notesapp.domain.repository.ThemeRepository
@@ -41,4 +43,10 @@ abstract class RepositoryModule {
     abstract fun bindTextRecognitionRepository(
         textRecognitionRepositoryImpl: TextRecognitionRepositoryImpl
     ): TextRecognitionRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindChatRepository(
+        chatRepositoryImpl: ChatRepositoryImpl
+    ): ChatRepository
 }

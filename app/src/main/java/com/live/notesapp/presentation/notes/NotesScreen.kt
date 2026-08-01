@@ -16,6 +16,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.PushPin
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,70 +25,19 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.live.notesapp.domain.model.Note
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NotesScreen(
     viewModel: NotesViewModel,
-    onLogout: () -> Unit,
-    onNavigateToSettings: () -> Unit
+    onNavigateToViewNote: (String) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val sheetState = rememberModalBottomSheetState()
-    val scope = rememberCoroutineScope()
-    var showSheet by remember { mutableStateOf(false) }
-    var selectedNote by remember { mutableStateOf<Note?>(null) }
-    var isEditing by remember { mutableStateOf(false) }
-    var showMenu by remember { mutableStateOf(false) }
-    val addEditViewModel: AddEditNoteViewModel = hiltViewModel()
 
-    if (showSheet) {
-        ModalBottomSheet(
-            onDismissRequest = { showSheet = false },
-            sheetState = sheetState,
-            containerColor = MaterialTheme.colorScheme.surface,
-            dragHandle = null
-        ) {
-            if (isEditing) {
-                AddEditNoteScreen(
-                    viewModel = addEditViewModel,
-                    onBack = {
-                        scope.launch { sheetState.hide() }.invokeOnCompletion {
-                            if (!sheetState.isVisible) {
-                                showSheet = false
-                                viewModel.getNotes() // Refresh notes after edit
-                            }
-                        }
-                    }
-                )
-            } else {
-                selectedNote?.let { note ->
-                    ViewNoteScreen(
-                        note = note,
-                        onEdit = {
-                            isEditing = true
-                            addEditViewModel.loadNote(note.id)
-                        },
-                        onDelete = {
-                            note.id?.let {
-                                viewModel.deleteNote(it)
-                                scope.launch { sheetState.hide() }.invokeOnCompletion {
-                                    showSheet = false
-                                }
-                            }
-                        }
-                    )
-                }
-            }
-        }
+    LaunchedEffect(Unit) {
+        viewModel.getNotes()
     }
 
     Scaffold(
@@ -106,48 +56,9 @@ fun NotesScreen(
                     IconButton(onClick = { /* TODO: Implement Search */ }) {
                         Icon(Icons.Default.Search, contentDescription = "Search")
                     }
-                    Box {
-                        IconButton(onClick = { showMenu = true }) {
-                            Icon(Icons.Default.Menu, contentDescription = "Menu")
-                        }
-                        DropdownMenu(
-                            expanded = showMenu,
-                            onDismissRequest = { showMenu = false }
-                        ) {
-                            DropdownMenuItem(
-                                text = { Text("Settings") },
-                                onClick = {
-                                    showMenu = false
-                                    onNavigateToSettings()
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text("Logout") },
-                                onClick = {
-                                    showMenu = false
-                                    viewModel.logout(onLogout)
-                                }
-                            )
-                        }
-                    }
                 }
             )
         },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    selectedNote = null
-                    isEditing = true
-                    addEditViewModel.loadNote(null)
-                    showSheet = true
-                },
-                containerColor = Color(0xFF003049),
-                contentColor = Color.White,
-                shape = CircleShape
-            ) {
-                Icon(Icons.Default.Add, contentDescription = "Add Note")
-            }
-        }
     ) { padding ->
         Column(modifier = Modifier.padding(padding)) {
             // Category Row
@@ -197,11 +108,8 @@ fun NotesScreen(
                     NoteItem(
                         note = note,
                         onClick = {
-                            selectedNote = note
-                            isEditing = false
-                            showSheet = true
-                        },
-                        onDelete = { note.id?.let { viewModel.deleteNote(it) } }
+                            note.id?.let { onNavigateToViewNote(it) }
+                        }
                     )
                 }
             }
@@ -212,8 +120,7 @@ fun NotesScreen(
 @Composable
 fun NoteItem(
     note: Note,
-    onClick: () -> Unit,
-    onDelete: () -> Unit
+    onClick: () -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
