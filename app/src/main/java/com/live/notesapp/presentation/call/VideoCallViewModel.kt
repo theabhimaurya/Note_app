@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.live.notesapp.domain.repository.AuthRepository
 import com.live.notesapp.domain.repository.ChatRepository
 import com.live.notesapp.webrtc.WebRtcSessionManager
+import com.live.notesapp.domain.repository.CallRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -19,6 +20,7 @@ class VideoCallViewModel @Inject constructor(
     private val application: Application,
     private val chatRepository: ChatRepository,
     private val authRepository: AuthRepository,
+    private val callRepository: CallRepository,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -33,15 +35,49 @@ class VideoCallViewModel @Inject constructor(
 
     private var _sessionManager = MutableStateFlow<WebRtcSessionManager?>(null)
     val sessionManager: StateFlow<WebRtcSessionManager?> = _sessionManager
+    private var hasCreatedSession = false
 
     init {
         viewModelScope.launch {
             _otherUser.value = chatRepository.getUserDetails(otherUserId)
         }
+        if (isCaller) {
+            triggerCallSessionCreation()
+        }
+    }
+
+    private fun triggerCallSessionCreation() {
+        if (hasCreatedSession) return
+        hasCreatedSession = true
+        val currentUserId = authRepository.getCurrentUserId() ?: return
+        viewModelScope.launch {
+            try {
+                android.util.Log.d("VideoCallViewModel", "Initiating call session in DB: caller=$currentUserId, receiver=$otherUserId, room=$roomId")
+                callRepository.createCallSession(
+                    callerId = currentUserId,
+                    receiverId = otherUserId,
+                    roomId = roomId,
+                    callType = "video"
+                )
+            } catch (e: Exception) {
+                android.util.Log.e("VideoCallViewModel", "Error creating call session: ${e.message}", e)
+            }
+        }
     }
 
     fun initializeSession() {
         if (_sessionManager.value != null) return
+        val cachedUserId = authRepository.getCurrentUserId()
+        if (cachedUserId != null) {
+            _sessionManager.value = WebRtcSessionManager(
+                context = application,
+                chatRepository = chatRepository,
+                currentUserId = cachedUserId,
+                otherUserId = otherUserId,
+                roomId = roomId
+            )
+            return
+        }
         viewModelScope.launch {
             authRepository.currentUser.collectLatest { user ->
                 if (user != null && _sessionManager.value == null) {
@@ -59,6 +95,9 @@ class VideoCallViewModel @Inject constructor(
 
     fun startCall() {
         _sessionManager.value?.startCall()
+        if (isCaller) {
+            triggerCallSessionCreation()
+        }
     }
 
     fun endCall() {

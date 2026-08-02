@@ -8,6 +8,7 @@ import com.live.notesapp.domain.model.CallSignal
 import com.live.notesapp.domain.model.ChatMessage
 import com.live.notesapp.domain.model.ChatUser
 import com.live.notesapp.domain.repository.AuthRepository
+import com.live.notesapp.domain.repository.CallRepository
 import com.live.notesapp.domain.repository.ChatRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -21,7 +22,8 @@ import javax.inject.Inject
 @HiltViewModel
 class ChatViewModel @Inject constructor(
     private val chatRepository: ChatRepository,
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    private val callRepository: CallRepository
 ) : ViewModel() {
 
     private val _messages = MutableStateFlow<List<ChatMessage>>(emptyList())
@@ -92,6 +94,22 @@ class ChatViewModel @Inject constructor(
                 } else if (signal.type == "hangup") {
                     _incomingCall.value = null
                 }
+            }
+        }
+    }
+
+    fun initiateCall(otherUserId: String, roomId: String) {
+        val currentUserId = _currentUserId.value ?: authRepository.getCurrentUserId() ?: return
+        viewModelScope.launch {
+            try {
+                callRepository.createCallSession(
+                    callerId = currentUserId,
+                    receiverId = otherUserId,
+                    roomId = roomId,
+                    callType = "video"
+                )
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
     }

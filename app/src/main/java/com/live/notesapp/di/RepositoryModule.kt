@@ -49,4 +49,10 @@ abstract class RepositoryModule {
     abstract fun bindChatRepository(
         chatRepositoryImpl: ChatRepositoryImpl
     ): ChatRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindCallRepository(
+        callRepositoryImpl: com.live.notesapp.data.repository.CallRepositoryImpl
+    ): com.live.notesapp.domain.repository.CallRepository
 }

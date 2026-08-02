@@ -141,13 +141,22 @@ fun ChatItem(
         Box(
             modifier = Modifier.size(60.dp)
         ) {
+            val displayName = uiState.otherUser?.name?.takeIf { it.isNotBlank() } ?: "User"
+            val initial = displayName.trim().take(1).uppercase()
+
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .clip(CircleShape)
-                    .background(Color.LightGray)
+                    .background(MaterialTheme.colorScheme.primaryContainer),
+                contentAlignment = Alignment.Center
             ) {
-                // Placeholder for Avatar Image
+                Text(
+                    text = initial,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold
+                )
             }
             // Online status indicator
             Box(
@@ -162,7 +171,7 @@ fun ChatItem(
                     modifier = Modifier
                         .fillMaxSize()
                         .clip(CircleShape)
-                        .background(Color.Green)
+                        .background(Color(0xFF4CAF50))
                 )
             }
         }

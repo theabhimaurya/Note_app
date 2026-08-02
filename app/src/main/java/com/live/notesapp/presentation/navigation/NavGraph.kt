@@ -30,11 +30,12 @@ import com.live.notesapp.presentation.splash.SplashScreen
 @Composable
 fun NavGraph(
     navController: NavHostController,
-    authRepository: AuthRepository
+    authRepository: AuthRepository,
+    startDestination: String = Screen.Splash.route
 ) {
     NavHost(
         navController = navController,
-        startDestination = Screen.Splash.route
+        startDestination = startDestination
     ) {
         composable(Screen.Splash.route) {
             SplashScreen(
@@ -139,7 +140,15 @@ fun NavGraph(
                 otherUserId = otherUserId,
                 roomId = roomId,
                 isCaller = isCaller,
-                onBack = { navController.popBackStack() }
+                onBack = {
+                    if (navController.previousBackStackEntry != null) {
+                        navController.popBackStack()
+                    } else {
+                        navController.navigate(if (authRepository.isUserLoggedIn()) Screen.Root.route else Screen.Login.route) {
+                            popUpTo(0) { inclusive = true }
+                        }
+                    }
+                }
             )
         }
     }

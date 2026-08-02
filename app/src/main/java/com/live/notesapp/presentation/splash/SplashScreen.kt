@@ -25,7 +25,7 @@ fun SplashScreen(
     onNavigateToNotes: () -> Unit
 ) {
     LaunchedEffect(Unit) {
-        delay(2000) // 2 seconds delay for splash
+        delay(1000) // 1 second branding splash transition (zero API / network calls)
         if (authRepository.isUserLoggedIn()) {
             onNavigateToNotes()
         } else {

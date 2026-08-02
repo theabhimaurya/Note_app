@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "574357967210",
+    "firebase_url": "https://video-app-27e52-default-rtdb.firebaseio.com",
+    "project_id": "video-app-27e52",
+    "storage_bucket": "video-app-27e52.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:574357967210:android:fbf99a9dc469413cf65513",
+        "android_client_info": {
+          "package_name": "com.live.notesapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA0CYID87ZernsC3-lRPjmO9DLhtSn1uo4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

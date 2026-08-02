@@ -37,9 +37,9 @@ class WebRtcSessionManager(
     private var peerConnectionFactory: PeerConnectionFactory
     private var peerConnection: PeerConnection? = null
     private var videoCapturer: VideoCapturer? = null
-    private var videoSource: org.webrtc.VideoSource? = null
+    private var videoSource: VideoSource? = null
     private var surfaceTextureHelper: SurfaceTextureHelper? = null
-    private var audioSource: org.webrtc.AudioSource? = null
+    private var audioSource: AudioSource? = null
     private var localAudioTrack: AudioTrack? = null
     
     private val _localVideoTrack = MutableStateFlow<VideoTrack?>(null)

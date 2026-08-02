@@ -83,9 +83,16 @@ fun ChatScreen(
                             modifier = Modifier
                                 .size(40.dp)
                                 .clip(CircleShape)
-                                .background(Color.LightGray)
+                                .background(MaterialTheme.colorScheme.primaryContainer),
+                            contentAlignment = Alignment.Center
                         ) {
-                            // Placeholder for avatar
+                            val displayName = otherUser?.name?.takeIf { it.isNotBlank() } ?: "User"
+                            Text(
+                                text = displayName.trim().take(1).uppercase(),
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
                         }
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
@@ -109,6 +116,7 @@ fun ChatScreen(
                 actions = {
                     IconButton(onClick = { 
                         currentRoomId?.let { roomId ->
+                            viewModel.initiateCall(otherUserId, roomId)
                             onNavigateToCall(otherUserId, roomId, true)
                         }
                     }) {
